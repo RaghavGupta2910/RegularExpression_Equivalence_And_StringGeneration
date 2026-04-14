@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RE Lab — Regular Expression Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+  <div id="intro-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: opacity 0.6s ease, visibility 0.6s ease;">
+    <div id="intro-particles" style="position: absolute; inset: 0; pointer-events: none;"></div>
+    <div style="position: relative; z-index: 10; text-align: center; max-width: 600px; padding: 2rem;">
+      <div class="logo-mark" style="width: 80px; height: 80px; font-size: 24px; margin: 0 auto 1.5rem auto; animation: logoPulse 3s ease-in-out infinite;">RE</div>
+      <h1 class="section-title" style="font-size: 48px; margin-bottom: 1rem;">RE <span>Lab</span></h1>
+      <p class="section-desc" style="font-size: 16px; margin: 0 auto 2.5rem auto; text-align: center;">An interactive, animated playground for exploring Regular Expressions, Automata, and Formal Languages. Build, minimize, and visually simulate DFAs in real-time.</p>
+      <button class="primary-btn large" onclick="closeIntroScreen()" style="font-size: 16px; padding: 18px 54px;">Enter Project ↗</button>
+    </div>
+  </div>
+
+  <div class="bg-grid"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark">RE</span>
+        <span class="logo-text">Lab</span>
+        <span class="logo-sub">Automata &amp; Formal Languages</span>
+      </div>
+
+      <nav class="main-nav">
+        <button class="nav-btn active" data-tab="builder">Builder</button>
+        <button class="nav-btn" data-tab="generator">Generator</button>
+        <button class="nav-btn" data-tab="tester">Tester</button>
+        <button class="nav-btn" data-tab="equiv">Equivalence</button>
+        <button class="nav-btn" data-tab="reference">Reference</button>
+      </nav>
+
+      <div class="header-right">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark theme" aria-label="Toggle theme">
+          <span class="icon-moon">🌙</span>
+          <span class="icon-sun">☀️</span>
+        </button>
+        <div class="example-loader" id="example-loader">
+          <button class="example-trigger" id="example-trigger" onclick="toggleExampleMenu()">
+            <span class="example-trigger-icon">⚡</span> Examples
+            <span class="example-caret" id="example-caret">▾</span>
+          </button>
+          <div class="example-menu" id="example-menu">
+            <div class="example-menu-header" id="example-menu-header">Examples for Builder</div>
+            <div class="example-list" id="example-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- ═══════════════════════════════════════ BUILDER ══ -->
+    <section id="tab-builder" class="tab-section active">
+      <div class="section-hero">
+        <div class="section-hero-num">01</div>
+        <div class="section-hero-body">
+          <h1 class="section-title">Expression <span>Builder</span></h1>
+          <p class="section-desc">Compose a regular expression using the symbol palette below, then inspect its NFA/DFA structure and properties in real time.</p>
+        </div>
+      </div>
+
+      <div class="builder-layout">
+        <div class="builder-main">
+          <div class="re-field-wrap">
+            <label class="field-label">Regular Expression</label>
+            <div class="re-input-row">
+              <input id="re-main" class="re-input" type="text" placeholder="(a+b)*abb" autocomplete="off" spellcheck="false" />
+              <button class="primary-btn compact" onclick="runBuilderAnalysis()" title="Analyze Expression" style="margin-top:0; padding: 0 20px;">Enter</button>
+              <button class="icon-btn" onclick="clearInput('re-main')" title="Clear">✕</button>
+              <button class="icon-btn" onclick="backspaceInput('re-main')" title="Backspace">⌫</button>
+            </div>
+          </div>
+
+          <div class="palette-section">
+            <div class="palette-group">
+              <span class="palette-group-label">Literals</span>
+              <div class="palette-row">
+                <button class="sym-btn" data-sym="a" data-tip="literal a">a</button>
+                <button class="sym-btn" data-sym="b" data-tip="literal b">b</button>
+                <button class="sym-btn" data-sym="c" data-tip="literal c">c</button>
+                <button class="sym-btn" data-sym="d" data-tip="literal d">d</button>
+                <button class="sym-btn" data-sym="0" data-tip="literal 0">0</button>
+                <button class="sym-btn" data-sym="1" data-tip="literal 1">1</button>
+                <button class="sym-btn" data-sym="ε" data-tip="empty string">ε</button>
+                <button class="sym-btn" data-sym="∅" data-tip="empty set">∅</button>
+              </div>
+            </div>
+
+            <div class="palette-group">
+              <span class="palette-group-label">Operators</span>
+              <div class="palette-row">
+                <button class="sym-btn op" data-sym="+" data-tip="union / alternation">+</button>
+                <button class="sym-btn op" data-sym="*" data-tip="Kleene star — zero or more">*</button>
+                <button class="sym-btn op" data-sym="!" data-tip="one or more">!</button>
+                <button class="sym-btn op" data-sym="?" data-tip="zero or one">?</button>
+                <button class="sym-btn op" data-sym="(" data-tip="open group">(</button>
+                <button class="sym-btn op" data-sym=")" data-tip="close group">)</button>
+              </div>
+            </div>
+
+            <div class="palette-group">
+              <span class="palette-group-label">Snippets</span>
+              <div class="palette-row wrap">
+                <button class="snippet-btn" data-snippet="(a+b)*abb">(a+b)*abb</button>
+                <button class="snippet-btn" data-snippet="(0+1)*0">(0+1)*0</button>
+                <button class="snippet-btn" data-snippet="a*b*a*">a*b*a*</button>
+                <button class="snippet-btn" data-snippet="(aa+bb)*">(aa+bb)*</button>
+                <button class="snippet-btn" data-snippet="a(b+c)*d">a(b+c)*d</button>
+                <button class="snippet-btn" data-snippet="(ab)!c?">(ab)!c?</button>
+                <button class="snippet-btn" data-snippet="(a+ε)b*">(a+ε)b*</button>
+                <button class="snippet-btn" data-snippet="(a+b)*a(a+b)(a+b)">(a+b)*a(a+b)(a+b)</button>
+                <button class="snippet-btn" data-snippet="(0+1(01*0)*1)*">(0+1(01*0)*1)*</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="analysis-panel" id="builder-analysis">
+            <div class="analysis-empty">Enter a regular expression above to see its analysis.</div>
+          </div>
+        </div>
+
+        <div class="builder-sidebar">
+          <div class="sidebar-card validation-card" style="border-color: var(--amber); box-shadow: 0 4px 20px rgba(255,194,58,0.1);">
+            <div class="sidebar-card-title" style="color: var(--amber);">Valid Input Rules</div>
+            <div class="validation-rules" style="font-size: 11px; color: var(--text2); line-height: 1.5;">
+              <strong>Invalid Inputs to Avoid:</strong>
+              <ul style="margin-left: 14px; margin-top: 4px; margin-bottom: 8px;">
+                <li>Unmatched parentheses: <code>(a+b</code> or <code>a)</code></li>
+                <li>Empty groups: <code>()</code></li>
+                <li>Hanging operators: <code>a+</code> or <code>*a</code></li>
+                <li>Consecutive quantifiers: <code>a**</code> or <code>a!?</code></li>
+              </ul>
+              Valid regex characters include alphanumeric characters, operators <code>*</code>, <code>!</code>, <code>?</code>, <code>+</code>, and grouping <code>()</code>.
+            </div>
+          </div>
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">Operator Precedence</div>
+            <ol class="prec-list">
+              <li><code>()</code> Parentheses</li>
+              <li><code>* ! ?</code> Repetition</li>
+              <li>Concatenation</li>
+              <li><code>+</code> Union</li>
+            </ol>
+          </div>
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">Quick Identities</div>
+            <div class="identity-list">
+              <div class="identity"><code>r* = (r+ε)*</code></div>
+              <div class="identity"><code>r! = rr*</code></div>
+              <div class="identity"><code>r? = r+ε</code></div>
+              <div class="identity"><code>(r*)* = r*</code></div>
+              <div class="identity"><code>∅* = ε</code></div>
+              <div class="identity"><code>rε = εr = r</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════ GENERATOR ══ -->
+    <section id="tab-generator" class="tab-section">
+      <div class="section-hero">
+        <div class="section-hero-num">02</div>
+        <div class="section-hero-body">
+          <h1 class="section-title">String <span>Generator</span></h1>
+          <p class="section-desc">Enumerate all strings accepted by a regular expression up to any length, in BFS order.</p>
+        </div>
+      </div>
+
+        <div class="gen-layout">
+          <div class="re-field-wrap">
+            <label class="field-label">Regular Expression</label>
+            <input id="re-gen" class="re-input" type="text" placeholder="(a+b)*abb" autocomplete="off" spellcheck="false" />
+          </div>
+
+          <div class="controls-row">
+            <div class="control-group">
+              <label class="field-label">Max string length</label>
+              <div class="slider-row">
+                <input type="range" id="gen-maxlen" min="1" max="30" value="10" class="slider" />
+                <span class="slider-val" id="gen-maxlen-out">10</span>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="field-label">Max results</label>
+              <div class="slider-row">
+                <input type="range" id="gen-maxres" min="5" max="500" value="100" step="5" class="slider" />
+                <span class="slider-val" id="gen-maxres-out">100</span>
+              </div>
+            </div>
+            <div class="control-group" style="justify-content:flex-end;">
+              <button class="primary-btn compact" onclick="runGenerator()" style="margin-top:22px;">Generate ↗</button>
+            </div>
+          </div>
+
+          <div class="gen-output" id="gen-output">
+            <div class="output-empty">Enter a regular expression and click Generate.</div>
+          </div>
+
+          <div class="gen-animation-panel" id="gen-anim-panel" style="display: none; margin-top: 1.5rem; background: var(--bg2); border: 1.5px solid var(--border2); border-radius: var(--radius-xl); padding: 1.5rem 1.75rem;">
+            <div class="output-header" style="margin-bottom: 12px; border-bottom: none; padding-bottom: 0; align-items: center;">
+              <div>
+                <span class="output-title">Step-by-Step String Generation</span><br/>
+                <span style="font-size:11px;color:var(--text3);" id="gen-anim-status">Simulating string...</span>
+              </div>
+              <div style="font-family: var(--mono); font-size: 18px; color: var(--accent2); font-weight: 700; background: var(--bg3); padding: 4px 12px; border-radius: 8px; border: 1px solid var(--border2); letter-spacing: 0.1em;" id="gen-anim-string"></div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1rem;">
+               <button class="primary-btn compact" id="anim-btn-prev" onclick="animPrevStep()" style="padding: 8px 16px;">&larr; Prev</button>
+               <button class="primary-btn compact" id="anim-btn-next" onclick="animNextStep()" style="padding: 8px 16px;">Next &rarr;</button>
+               <button class="icon-btn" id="anim-btn-play" onclick="animTogglePlay()" style="margin-left:auto; padding: 8px 16px;">Auto Play</button>
+            </div>
+
+            <div id="gen-vis-network" style="width: 100%; height: 450px; background: var(--bg); border: 1.5px solid var(--border2); border-radius: 8px;"></div>
+          </div>
+        </div>
+      </section>
+
+    <!-- ═══════════════════════════════════════ TESTER ══ -->
+    <section id="tab-tester" class="tab-section">
+      <div class="section-hero">
+        <div class="section-hero-num">03</div>
+        <div class="section-hero-body">
+          <h1 class="section-title">String <span>Tester</span></h1>
+          <p class="section-desc">Test whether individual strings or batches of strings are accepted or rejected by a regular expression.</p>
+        </div>
+      </div>
+
+      <div class="tester-layout">
+        <div class="tester-re-col">
+          <div class="re-field-wrap">
+            <label class="field-label">Regular Expression</label>
+            <input id="re-test" class="re-input" type="text" placeholder="(a+b)*abb" autocomplete="off" spellcheck="false" />
+          </div>
+
+          <div class="re-field-wrap" style="margin-top:1.5rem;">
+            <label class="field-label">Single String Test</label>
+            <div class="re-input-row">
+              <input id="single-test-str" class="re-input" type="text" placeholder="abb" autocomplete="off" spellcheck="false" style="font-size:16px;" />
+              <button class="primary-btn compact" onclick="runSingleTest()">Test →</button>
+            </div>
+          </div>
+
+          <div id="single-result" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="tester-batch-col">
+          <div class="re-field-wrap">
+            <label class="field-label">Batch Test <span class="field-hint">— one string per line</span></label>
+            <textarea id="batch-input" class="batch-textarea" placeholder="abb&#10;aabb&#10;babb&#10;ab&#10;ba"></textarea>
+          </div>
+          <button class="primary-btn compact" onclick="runBatchTest()">Run Batch →</button>
+          <div id="batch-result" class="batch-output" style="margin-top:1rem;">
+            <div class="output-empty">Batch results will appear here.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════ EQUIVALENCE ══ -->
+    <section id="tab-equiv" class="tab-section">
+      <div class="section-hero">
+        <div class="section-hero-num">04</div>
+        <div class="section-hero-body">
+          <h1 class="section-title">Equivalence <span>Checker</span></h1>
+          <p class="section-desc">Two REs are equivalent iff they define the same language. Uses Thompson's NFA → Subset DFA → BFS product automaton.</p>
+        </div>
+      </div>
+
+      <div class="equiv-layout">
+        <div class="equiv-inputs">
+          <div class="equiv-re-block">
+            <label class="field-label">RE₁</label>
+            <input id="re-eq1" class="re-input large" type="text" placeholder="(a+b)*abb" autocomplete="off" spellcheck="false" />
+            <div class="equiv-presets">
+              <button class="snippet-btn small" data-for="re-eq1" data-snippet="(a+b)*abb">(a+b)*abb</button>
+              <button class="snippet-btn small" data-for="re-eq1" data-snippet="a*b*">a*b*</button>
+              <button class="snippet-btn small" data-for="re-eq1" data-snippet="(aa)*">(aa)*</button>
+              <button class="snippet-btn small" data-for="re-eq1" data-snippet="(a+b)!">(a+b)!</button>
+            </div>
+          </div>
+
+          <div class="equiv-vs">≡?</div>
+
+          <div class="equiv-re-block">
+            <label class="field-label">RE₂</label>
+            <input id="re-eq2" class="re-input large" type="text" placeholder="(a+b)*a(a+b)(a+b)" autocomplete="off" spellcheck="false" />
+            <div class="equiv-presets">
+              <button class="snippet-btn small" data-for="re-eq2" data-snippet="(a+b)*a(a+b)(a+b)">(a+b)*a(a+b)(a+b)</button>
+              <button class="snippet-btn small" data-for="re-eq2" data-snippet="(a*b*)*">(a*b*)*</button>
+              <button class="snippet-btn small" data-for="re-eq2" data-snippet="(aa)*">(aa)*</button>
+              <button class="snippet-btn small" data-for="re-eq2" data-snippet="(a+b)*">(a+b)*</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="equiv-actions">
+          <button class="primary-btn large" onclick="runEquivalence()">Check Equivalence →</button>
+        </div>
+
+        <div id="equiv-result" class="equiv-result-box pending">
+          <div class="equiv-placeholder">Enter two regular expressions and click Check Equivalence.</div>
+        </div>
+
+        <div id="equiv-detail"></div>
+
+        <div id="equiv-anim-panel" style="display: none; margin-top: 1.5rem; background: var(--bg2); border: 1.5px solid var(--border2); border-radius: var(--radius-xl); padding: 1.5rem 1.75rem;">
+            <div class="output-header" style="margin-bottom: 12px; border-bottom: none; padding-bottom: 0; align-items: center;">
+              <div>
+                <span class="output-title">Equivalence Side-by-Side Simulation</span><br/>
+                <span style="font-size:11px;color:var(--text3);" id="equiv-anim-status">Simulating string...</span>
+              </div>
+              <div style="font-family: var(--mono); font-size: 18px; color: var(--accent2); font-weight: 700; background: var(--bg3); padding: 4px 12px; border-radius: 8px; border: 1px solid var(--border2); letter-spacing: 0.1em;" id="equiv-anim-string"></div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1rem;">
+               <button class="primary-btn compact" id="equiv-btn-prev" onclick="equivPrevStep()" style="padding: 8px 16px;">&larr; Prev</button>
+               <button class="primary-btn compact" id="equiv-btn-next" onclick="equivNextStep()" style="padding: 8px 16px;">Next &rarr;</button>
+               <button class="icon-btn" id="equiv-btn-play" onclick="equivTogglePlay()" style="margin-left:auto; padding: 8px 16px;">Auto Play</button>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+               <div style="flex: 1; display:flex; flex-direction:column; gap:8px;">
+                  <span style="font-size:11px; font-weight:bold; color:var(--text2); text-align:center;">DFA 1 (RE₁)</span>
+                  <div id="equiv-vis-1" style="width: 100%; height: 450px; background: var(--bg); border: 1.5px solid var(--border2); border-radius: 8px;"></div>
+               </div>
+               <div style="flex: 1; display:flex; flex-direction:column; gap:8px;">
+                  <span style="font-size:11px; font-weight:bold; color:var(--text2); text-align:center;">DFA 2 (RE₂)</span>
+                  <div id="equiv-vis-2" style="width: 100%; height: 450px; background: var(--bg); border: 1.5px solid var(--border2); border-radius: 8px;"></div>
+               </div>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════ REFERENCE ══ -->
+    <section id="tab-reference" class="tab-section">
+      <div class="section-hero">
+        <div class="section-hero-num">05</div>
+        <div class="section-hero-body">
+          <h1 class="section-title">Reference <span>Guide</span></h1>
+          <p class="section-desc">Notation, operator table, algebraic laws, and the algorithm pipeline used by this tool.</p>
+        </div>
+      </div>
+
+      <div class="ref-layout">
+        <div class="ref-col">
+          <h2 class="ref-heading">Notation</h2>
+          <table class="ref-table">
+            <thead><tr><th>Notation</th><th>Meaning</th><th>Example</th><th>Accepts</th></tr></thead>
+            <tbody>
+              <tr><td><code>a</code></td><td>Literal symbol</td><td><code>a</code></td><td><code>a</code></td></tr>
+              <tr><td><code>ε</code></td><td>Empty string</td><td><code>ε</code></td><td><code>""</code></td></tr>
+              <tr><td><code>∅</code></td><td>Empty set</td><td><code>∅</code></td><td>nothing</td></tr>
+              <tr><td><code>r+s</code></td><td>Union</td><td><code>a+b</code></td><td><code>a</code> or <code>b</code></td></tr>
+              <tr><td><code>rs</code></td><td>Concatenation</td><td><code>ab</code></td><td><code>ab</code></td></tr>
+              <tr><td><code>r*</code></td><td>Kleene star</td><td><code>a*</code></td><td><code>ε, a, aa, ...</code></td></tr>
+              <tr><td><code>r!</code></td><td>One or more</td><td><code>a!</code></td><td><code>a, aa, aaa, ...</code></td></tr>
+              <tr><td><code>r?</code></td><td>Zero or one</td><td><code>a?</code></td><td><code>ε</code> or <code>a</code></td></tr>
+              <tr><td><code>(r)</code></td><td>Grouping</td><td><code>(ab)*</code></td><td><code>ε, ab, abab, ...</code></td></tr>
+            </tbody>
+          </table>
+
+          <h2 class="ref-heading" style="margin-top:2.5rem;">Algebraic Laws</h2>
+          <table class="ref-table">
+            <thead><tr><th>Law</th><th>Identity</th></tr></thead>
+            <tbody>
+              <tr><td>Annihilation</td><td><code>r∅ = ∅r = ∅</code></td></tr>
+              <tr><td>Identity (concat)</td><td><code>rε = εr = r</code></td></tr>
+              <tr><td>Identity (union)</td><td><code>r+∅ = r</code></td></tr>
+              <tr><td>Commutativity</td><td><code>r+s = s+r</code></td></tr>
+              <tr><td>Associativity</td><td><code>(r+s)+t = r+(s+t)</code></td></tr>
+              <tr><td>Idempotency</td><td><code>r+r = r</code></td></tr>
+              <tr><td>Distributivity</td><td><code>r(s+t) = rs+rt</code></td></tr>
+              <tr><td>Star idempotent</td><td><code>(r*)* = r*</code></td></tr>
+              <tr><td>Star of empty</td><td><code>∅* = ε</code></td></tr>
+              <tr><td>Star of ε</td><td><code>ε* = ε</code></td></tr>
+              <tr><td>Plus definition</td><td><code>r! = rr*</code></td></tr>
+              <tr><td>Question definition</td><td><code>r? = r+ε</code></td></tr>
+              <tr><td>Arden's Lemma</td><td><code>L = rL+s ⇒ L = r*s</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="ref-col">
+          <h2 class="ref-heading">Algorithm Pipeline</h2>
+          <div class="pipeline">
+            <div class="pipe-step">
+              <div class="pipe-num">01</div>
+              <div class="pipe-body">
+                <div class="pipe-title">Parsing</div>
+                <div class="pipe-desc">Recursive-descent parser builds an abstract parse tree respecting precedence: grouping &gt; repetition &gt; concatenation &gt; union.</div>
+              </div>
+            </div>
+            <div class="pipe-arrow">↓</div>
+            <div class="pipe-step">
+              <div class="pipe-num">02</div>
+              <div class="pipe-body">
+                <div class="pipe-title">Thompson's NFA Construction</div>
+                <div class="pipe-desc">Each sub-expression maps to an NFA fragment with exactly one start and one accept state. Fragments are composed via union, concatenation, and star constructions using ε-transitions.</div>
+              </div>
+            </div>
+            <div class="pipe-arrow">↓</div>
+            <div class="pipe-step">
+              <div class="pipe-num">03</div>
+              <div class="pipe-body">
+                <div class="pipe-title">ε-closure &amp; Subset Construction</div>
+                <div class="pipe-desc">Each DFA state is a set of NFA states reachable via ε-transitions. BFS over subsets builds the complete DFA. A DFA state is accepting iff any NFA state in it is accepting.</div>
+              </div>
+            </div>
+            <div class="pipe-arrow">↓</div>
+            <div class="pipe-step">
+              <div class="pipe-num">04</div>
+              <div class="pipe-body">
+                <div class="pipe-title">Equivalence via Product Automaton</div>
+                <div class="pipe-desc">BFS over pairs (q₁, q₂) of DFA states from both machines. If any pair has one accepting and one rejecting, the witness input string distinguishes the two languages.</div>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="ref-heading" style="margin-top:2.5rem;">Complexity</h2>
+          <table class="ref-table">
+            <thead><tr><th>Operation</th><th>Complexity</th></tr></thead>
+            <tbody>
+              <tr><td>Parsing</td><td>O(n)</td></tr>
+              <tr><td>Thompson's NFA</td><td>O(n) states, O(n) transitions</td></tr>
+              <tr><td>Subset DFA</td><td>O(2ⁿ) states worst case</td></tr>
+              <tr><td>NFA simulation</td><td>O(n·|w|)</td></tr>
+              <tr><td>Equivalence check</td><td>O(|DFA₁| × |DFA₂|)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>RE Lab</span>
+    <span class="footer-sep">·</span>
+    <span>Theory of Automata &amp; Formal Languages</span>
+    <span class="footer-sep">·</span>
+    <span>Thompson's NFA · Subset Construction · BFS Equivalence</span>
+  </footer>
+
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

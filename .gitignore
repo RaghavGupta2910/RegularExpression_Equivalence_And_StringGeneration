@@ -1,0 +1,12 @@
+# OS junk files
+[Dd]s.[Ss]tore
+.DS_Store
+Thumbs.db
+
+# Project-specific exclusions
+.gemini/
+*.log
+screenshots/ # Optional: user might want to keep screenshots, but usually good to ignore if auto-generated.
+# However, for this project, I'll include screenshots/ since they are part of the documentation.
+# So I'll comment it out.
+# screenshots/
