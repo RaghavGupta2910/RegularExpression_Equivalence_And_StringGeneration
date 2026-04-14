@@ -38,10 +38,13 @@ To determine if two Regular Expressions define the same language, the tool perfo
 *Parallax landing screen with cursor-reactive operator particles.*
 
 ![Expression Builder](screenshots/builder.png)
-*Live DFA construction and structural analysis.*
+*Live DFA construction and structural analysis with step-by-step build simulation.*
 
-![Equivalence & Simulation](screenshots/generator.png)
-*Step-by-step transition simulation on a generated string.*
+![String Tester](screenshots/tester.png)
+*Batch processing and high-throughput string validation.*
+
+![Equivalence & Simulation](screenshots/equivalence.png)
+*Language equivalence verification and side-by-side transition simulation.*
 
 ## 📚 Notation Reference
 
