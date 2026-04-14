@@ -2,7 +2,7 @@
 
 An advanced, pedagogically focused Regular Expression analyzer that bridges the gap between formal language theory and interactive visualization. This tool implements the complete pipeline from a regex string to a minimized, simulating DFA.
 
-## 🚀 Key Features (Beyond Basic Analysis)
+## Key Features (Beyond Basic Analysis)
 
 While most tools handle simple generation, **RE Lab** implements the full automata lifecycle:
 
@@ -32,7 +32,7 @@ The engine executes a Breadth-First Search (BFS) over the powerset of NFA states
 ### 4. Equivalence Checking
 To determine if two Regular Expressions define the same language, the tool performs a **Product Automaton Traversal**. It explores the pairs of states $(q_1, q_2)$ from both DFAs. If the search reaches a pair where exactly one state is accepting, it produces a "witness" string that is accepted by one regex but not the other, proving non-equivalence.
 
-## 📸 Project Previews
+## Project Previews
 
 ![Landing Screen](screenshots/landing.png)
 *Parallax landing screen with cursor-reactive operator particles.*
@@ -46,7 +46,7 @@ To determine if two Regular Expressions define the same language, the tool perfo
 ![Equivalence & Simulation](screenshots/equivalence.png)
 *Language equivalence verification and side-by-side transition simulation.*
 
-## 📚 Notation Reference
+## Notation Reference
 
 | Notation | Meaning | Example |
 | :--- | :--- | :--- |
