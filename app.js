@@ -260,8 +260,9 @@ bindSlider('gen-maxres', 'gen-maxres-out');
 ═══════════════════════════════════════════════════════ */
 const reMainInput = document.getElementById('re-main');
 if (reMainInput) {
-  reMainInput.addEventListener('input', runBuilderAnalysis);
-  runBuilderAnalysis(); // initial run on default value
+  reMainInput.addEventListener('keydown', e => {
+     if (e.key === 'Enter') runBuilderAnalysis();
+  }); // initial run on default value
 }
 
 function runBuilderAnalysis() {
@@ -386,8 +387,11 @@ function buildTogglePlay() {
            if (_buildAnimContext.currentIndex < _buildAnimContext.seq.length - 1) {
                buildNextStep();
            } else {
-               buildTogglePlay();
-           }
+                clearInterval(_buildAnimContext.interval);
+                _buildAnimContext.interval = null;
+                const pb = document.getElementById('build-btn-play');
+                if (pb) pb.textContent = 'Replay';
+            }
        }, 1200);
    }
 }
@@ -1192,9 +1196,6 @@ function escHtml(str) {
 }
 
 /* Keyboard shortcut: Enter on RE inputs triggers relevant action */
-document.getElementById('re-main')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') runBuilderAnalysis();
-});
 document.getElementById('re-gen')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') runGenerator();
 });
