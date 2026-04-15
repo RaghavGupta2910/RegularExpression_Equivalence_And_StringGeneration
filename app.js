@@ -260,11 +260,16 @@ bindSlider('gen-maxres', 'gen-maxres-out');
 ═══════════════════════════════════════════════════════ */
 const reMainInput = document.getElementById('re-main');
 if (reMainInput) {
-  reMainInput.addEventListener('input', runBuilderAnalysis);
+  // Removed automatic runBuilderAnalysis on 'input' as per user request
   runBuilderAnalysis(); // initial run on default value
 }
 
 function runBuilderAnalysis() {
+  // Clear any existing builder animation interval
+  if (_buildAnimContext && _buildAnimContext.interval) {
+    clearInterval(_buildAnimContext.interval);
+    _buildAnimContext.interval = null;
+  }
   const re = (document.getElementById('re-main')?.value || '').trim();
   const panel = document.getElementById('builder-analysis');
   if (!panel) return;
@@ -716,13 +721,7 @@ function drawMinimizedDFA(containerId, minDfa, progressive = false) {
           if (firstStep.type === 'node') visNodes.add(firstStep.val);
           if (firstStep.type === 'edge') visEdges.add(firstStep.val);
           updateBuildAnimUI();
-          _buildAnimContext.interval = setInterval(() => {
-               if(_buildAnimContext.currentIndex < _buildAnimContext.seq.length - 1) {
-                   buildNextStep();
-               } else {
-                   buildTogglePlay();
-               }
-          }, 1200);
+          // Removed automatic setInterval here to prevent unwanted looping and auto-start
       }
       return { network, visNodes, visEdges, nodesArr, edgesDataArr };
   } else {
